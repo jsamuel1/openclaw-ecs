@@ -151,7 +151,7 @@ export class ClawdbotEcsStack extends cdk.Stack {
       essential: true,
       command: [
         'sh', '-c',
-        'npm install -g clawdbot@latest && clawdbot gateway run --bind 0.0.0.0 --port 18789',
+        'apt-get update && apt-get install -y git && git clone https://github.com/jsamuel1/clawdbot.git /tmp/clawdbot && cd /tmp/clawdbot && npm install -g . && clawdbot gateway run --bind 0.0.0.0 --port 18789',
       ],
       environment: {
         HOME: '/data',
