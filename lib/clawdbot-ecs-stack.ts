@@ -145,18 +145,12 @@ export class ClawdbotEcsStack extends cdk.Stack {
     });
 
     const container = taskDefinition.addContainer('clawdbot', {
-      image: ecs.ContainerImage.fromRegistry('node:22'),
+      image: ecs.ContainerImage.fromRegistry(
+        `${this.account}.dkr.ecr.${this.region}.amazonaws.com/moltbot:latest`
+      ),
       memoryReservationMiB: 1024,
       cpu: 512,
       essential: true,
-      command: [
-        'sh', '-c',
-        'apt-get update && apt-get install -y git python3 make g++ && git clone https://github.com/jsamuel1/moltbot.git /tmp/moltbot && cd /tmp/moltbot && npm install -g . && clawdbot gateway run --bind 0.0.0.0 --port 18789',
-      ],
-      environment: {
-        HOME: '/data',
-        NODE_ENV: 'production',
-      },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: 'clawdbot',
         logGroup,
