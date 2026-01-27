@@ -32,6 +32,7 @@ export class ClawdbotEcsStack extends cdk.Stack {
 
     cluster.addCapacity('ManagedCapacity', {
       instanceType: new ec2.InstanceType('t4g.small'),
+      machineImage: ecs.EcsOptimizedImage.amazonLinux2023(ecs.AmiHardwareType.ARM),
       minCapacity: 0,
       maxCapacity: 1,
       desiredCapacity: 1,
