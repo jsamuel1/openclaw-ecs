@@ -145,9 +145,9 @@ export class ClawdbotEcsStack extends cdk.Stack {
     });
 
     const container = taskDefinition.addContainer('clawdbot', {
-      image: ecs.ContainerImage.fromRegistry('node:22-slim'),
-      memoryReservationMiB: 512,
-      cpu: 256,
+      image: ecs.ContainerImage.fromRegistry('node:22'),
+      memoryReservationMiB: 1024,
+      cpu: 512,
       essential: true,
       command: [
         'sh', '-c',
