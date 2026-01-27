@@ -17,17 +17,24 @@ export class ClawdbotEcsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ClawdbotEcsStackProps) {
     super(scope, id, props);
 
-    // Lookup existing VPC (same as pi-hole)
+    // Lookup existing VPC
     const vpc = ec2.Vpc.fromLookup(this, 'Vpc', {
       vpcName: props.vpcName,
       isDefault: false,
     });
 
-    // Lookup existing ECS cluster
-    const cluster = ecs.Cluster.fromClusterAttributes(this, 'Cluster', {
-      clusterName: props.ecsClusterName,
+    // Create ECS cluster with managed capacity
+    const cluster = new ecs.Cluster(this, 'Cluster', {
       vpc,
-      securityGroups: [],
+      clusterName: props.ecsClusterName,
+      containerInsightsV2: ecs.ContainerInsights.ENABLED,
+    });
+
+    cluster.addCapacity('ManagedCapacity', {
+      instanceType: new ec2.InstanceType('t4g.small'),
+      minCapacity: 0,
+      maxCapacity: 1,
+      desiredCapacity: 1,
     });
 
     // Security group for Clawdbot (allow RFC1918 access to gateway port)

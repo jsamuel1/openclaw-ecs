@@ -8,12 +8,15 @@ on:
 
 env:
   AWS_REGION: ap-southeast-4
-  VPC_NAME: pihole-vpc
-  CLUSTER_NAME: pihole-cluster
+  VPC_NAME: ${{ vars.VPC_NAME || 'clawdbot-vpc' }}
+  CLUSTER_NAME: ${{ vars.CLUSTER_NAME || 'clawdbot-cluster' }}
 
 jobs:
   deploy:
     runs-on: clawdbot-aws
+    env:
+      CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+      CDK_DEFAULT_REGION: ap-southeast-4
     steps:
       - uses: actions/checkout@v4
 
@@ -24,11 +27,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install CDK
-        run: npm install -g aws-cdk
+      - name: CDK Bootstrap
+        run: npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ env.AWS_REGION }}
 
       - name: CDK Deploy
         run: |
-          cdk deploy --require-approval never \
+          npx cdk deploy --require-approval never \
             -c vpc_name=${{ env.VPC_NAME }} \
             -c cluster_name=${{ env.CLUSTER_NAME }}

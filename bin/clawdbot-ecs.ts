@@ -6,8 +6,8 @@ import { ClawdbotEcsStack } from '../lib/clawdbot-ecs-stack';
 const app = new cdk.App();
 
 // Configuration from context or defaults
-const vpcName = app.node.tryGetContext('vpc_name') || 'pihole-vpc';
-const clusterName = app.node.tryGetContext('cluster_name') || 'pihole-cluster';
+const vpcName = app.node.tryGetContext('vpc_name') || 'clawdbot-vpc';
+const clusterName = app.node.tryGetContext('cluster_name') || 'clawdbot-cluster';
 
 // Deploy to same account/region as pi-hole (ap-southeast-4 Melbourne)
 new ClawdbotEcsStack(app, 'ClawdbotEcsStack', {
