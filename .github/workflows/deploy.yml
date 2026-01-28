@@ -13,7 +13,7 @@ env:
 
 jobs:
   deploy:
-    runs-on: clawdbot-aws
+    runs-on: moltbot-aws
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
       CDK_DEFAULT_REGION: ap-southeast-4
