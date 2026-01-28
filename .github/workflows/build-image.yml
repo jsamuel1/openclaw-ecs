@@ -26,6 +26,12 @@ jobs:
         with:
           aws-region: ${{ env.CODEBUILD_REGION }}
 
+      - name: Install AWS CLI
+        run: |
+          curl -sL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+          unzip -q /tmp/awscliv2.zip -d /tmp
+          sudo /tmp/aws/install --update
+
       - name: Trigger CodeBuild
         id: codebuild
         run: |
