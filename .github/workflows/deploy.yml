@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
     paths: ['lib/**', 'bin/**']
+  workflow_run:
+    workflows: ["Build and Push Docker Image"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -14,6 +18,7 @@ env:
 jobs:
   deploy:
     runs-on: moltbot-aws
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
       CDK_DEFAULT_REGION: ap-southeast-4
