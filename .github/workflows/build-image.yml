@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    runs-on: clawdbot-aws
+    runs-on: moltbot-aws
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
     steps:
