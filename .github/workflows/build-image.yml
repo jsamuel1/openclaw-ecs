@@ -40,18 +40,15 @@ jobs:
           aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }}
 
       - name: Build image with Buildah
-        env:
-          BUILDAH_ISOLATION: chroot
-          STORAGE_DRIVER: vfs
         run: |
-          buildah bud -f docker/Dockerfile -t ${{ env.ECR_REPOSITORY }}:latest -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker/
+          sudo buildah bud -f docker/Dockerfile -t ${{ env.ECR_REPOSITORY }}:latest -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker/
 
       - name: Login to ECR
         run: |
           aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
-            buildah login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+            sudo buildah login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
       - name: Push to ECR
         run: |
-          buildah push ${{ env.ECR_REPOSITORY }}:latest docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
-          buildah push ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          sudo buildah push ${{ env.ECR_REPOSITORY }}:latest docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          sudo buildah push ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
