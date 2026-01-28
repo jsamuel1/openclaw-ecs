@@ -25,10 +25,10 @@ After deployment, exec into the container to run onboarding:
 
 ```bash
 # Get task ARN
-TASK=$(aws ecs list-tasks --cluster clawdbot-cluster --query 'taskArns[0]' --output text --region ap-southeast-4)
+TASK=$(aws ecs list-tasks --cluster moltbot-cluster --query 'taskArns[0]' --output text --region ap-southeast-4)
 
 # Exec into container
-aws ecs execute-command --cluster clawdbot-cluster --task $TASK --container clawdbot --interactive --command "/bin/bash" --region ap-southeast-4
+aws ecs execute-command --cluster moltbot-cluster --task $TASK --container clawdbot --interactive --command "/bin/bash" --region ap-southeast-4
 
 # Inside container: run onboarding
 moltbot onboard
@@ -37,8 +37,8 @@ moltbot onboard
 
 ## Architecture
 
-- **VPC**: clawdbot-vpc (has site-to-site VPN to home network)
-- **ECS Cluster**: clawdbot-cluster
+- **VPC**: moltbot-vpc (has site-to-site VPN to home network)
+- **ECS Cluster**: moltbot-cluster
 - **EFS**: Persistent storage for `~/.moltbot` config and sessions
 - **IAM**: Task role with Bedrock invoke permissions (CRIS global endpoints)
 - **Network**: awsvpc mode, RFC1918 access to gateway port 18789
@@ -50,7 +50,7 @@ From your home network (via VPN), connect to the ECS task's private IP on port 1
 To find the task IP:
 
 ```bash
-aws ecs describe-tasks --cluster clawdbot-cluster --tasks $TASK --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text --region ap-southeast-4
+aws ecs describe-tasks --cluster moltbot-cluster --tasks $TASK --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text --region ap-southeast-4
 ```
 
 ## Model Configuration

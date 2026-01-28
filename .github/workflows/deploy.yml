@@ -12,8 +12,8 @@ on:
 
 env:
   AWS_REGION: ap-southeast-4
-  VPC_NAME: ${{ vars.VPC_NAME || 'clawdbot-vpc' }}
-  CLUSTER_NAME: ${{ vars.CLUSTER_NAME || 'clawdbot-cluster' }}
+  VPC_NAME: ${{ vars.VPC_NAME || 'moltbot-vpc' }}
+  CLUSTER_NAME: ${{ vars.CLUSTER_NAME || 'moltbot-cluster' }}
 
 jobs:
   deploy:
