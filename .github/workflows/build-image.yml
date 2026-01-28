@@ -32,12 +32,18 @@ jobs:
           unzip -q /tmp/awscliv2.zip -d /tmp
           sudo /tmp/aws/install --update
 
+      - name: Upload source to S3
+        run: |
+          zip -r /tmp/source.zip . -x '.git/*'
+          aws s3 cp /tmp/source.zip s3://moltbot-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip --region ${{ env.CODEBUILD_REGION }}
+
       - name: Trigger CodeBuild
         id: codebuild
         run: |
           BUILD_ID=$(aws codebuild start-build \
             --project-name moltbot-arm64 \
-            --source-version ${{ github.sha }} \
+            --source-type-override S3 \
+            --source-location-override moltbot-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip \
             --region ${{ env.CODEBUILD_REGION }} \
             --query 'build.id' --output text)
           echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT

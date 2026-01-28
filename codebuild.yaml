@@ -41,6 +41,11 @@ Resources:
                   - ecr:DescribeRepositories
                   - ecr:CreateRepository
                 Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource: !Sub 'arn:aws:s3:::moltbot-codebuild-source-${AWS::AccountId}/*'
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
