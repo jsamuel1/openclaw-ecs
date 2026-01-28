@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    runs-on: moltbot-aws
+    runs-on: ubuntu-latest
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
     steps:
@@ -24,17 +24,18 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Install AWS CLI
         run: |
-          curl -sL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
-          unzip -q /tmp/awscliv2.zip -d /tmp
-          sudo /tmp/aws/install --update
+          which aws || (curl -sL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip && unzip -q /tmp/awscliv2.zip -d /tmp && sudo /tmp/aws/install --update)
 
       - name: Install Buildah and QEMU
-        run: |
-          sudo apt-get update && sudo apt-get install -y buildah qemu-user-static binfmt-support
-          sudo update-binfmts --enable qemu-aarch64
+        uses: docker/setup-qemu-action@v3
+
+      - name: Install Buildah
+        run: sudo apt-get update && sudo apt-get install -y buildah
 
       - name: Create ECR repository if not exists
         run: |
