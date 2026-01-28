@@ -45,6 +45,7 @@ jobs:
             --project-name moltbot-arm64 \
             --source-type-override S3 \
             --source-location-override moltbot-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip \
+            --environment-variables-override name=COMMIT_SHA,value=${{ github.sha }} \
             --region ${{ env.CODEBUILD_REGION }} \
             --query 'build.id' --output text)
           echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT

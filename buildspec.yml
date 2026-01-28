@@ -13,11 +13,11 @@ phases:
   build:
     commands:
       - echo Building Docker image...
-      - docker build -t $ECR_REPOSITORY:latest -t $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION docker/
+      - docker build -t $ECR_REPOSITORY:latest -t $ECR_REPOSITORY:$COMMIT_SHA docker/
   post_build:
     commands:
       - echo Pushing to ECR in $ECR_REGION...
       - docker tag $ECR_REPOSITORY:latest $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:latest
-      - docker tag $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker tag $ECR_REPOSITORY:$COMMIT_SHA $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:$COMMIT_SHA
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:latest
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:$COMMIT_SHA
