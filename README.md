@@ -25,7 +25,7 @@ After deployment, exec into the container to run onboarding:
 
 ```bash
 # Get task ARN
-TASK=$(aws ecs list-tasks --cluster clawdbot-cluster --service-name ClawdbotEcsStack-Service* --query 'taskArns[0]' --output text --region ap-southeast-4)
+TASK=$(aws ecs list-tasks --cluster clawdbot-cluster --query 'taskArns[0]' --output text --region ap-southeast-4)
 
 # Exec into container
 aws ecs execute-command --cluster clawdbot-cluster --task $TASK --container clawdbot --interactive --command "/bin/sh" --region ap-southeast-4
