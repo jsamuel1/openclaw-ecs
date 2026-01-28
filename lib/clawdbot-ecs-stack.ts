@@ -33,8 +33,8 @@ export class ClawdbotEcsStack extends cdk.Stack {
     cluster.addCapacity('ManagedCapacity', {
       instanceType: new ec2.InstanceType('t4g.small'),
       machineImage: ecs.EcsOptimizedImage.amazonLinux2023(ecs.AmiHardwareType.ARM),
-      minCapacity: 0,
-      maxCapacity: 1,
+      minCapacity: 1,
+      maxCapacity: 2,
       desiredCapacity: 1,
     });
 
@@ -164,13 +164,15 @@ export class ClawdbotEcsStack extends cdk.Stack {
       readOnly: false,
     });
 
-    // ECS Service
+    // ECS Service with rolling deployment
     const service = new ecs.Ec2Service(this, 'Service', {
       cluster,
       taskDefinition,
       desiredCount: 1,
       enableExecuteCommand: true,
       securityGroups: [securityGroup],
+      minHealthyPercent: 0,
+      maxHealthyPercent: 200,
     });
 
     // Allow EFS access from service
