@@ -40,12 +40,8 @@ jobs:
           aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }}
 
       - name: Build image with Buildah
-        uses: redhat-actions/buildah-build@v2
-        with:
-          image: ${{ env.ECR_REPOSITORY }}
-          tags: latest ${{ github.sha }}
-          context: docker
-          dockerfiles: docker/Dockerfile
+        run: |
+          buildah bud --isolation chroot -f docker/Dockerfile -t ${{ env.ECR_REPOSITORY }}:latest -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker/
 
       - name: Login to ECR
         run: |
@@ -53,8 +49,6 @@ jobs:
             buildah login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
       - name: Push to ECR
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: ${{ env.ECR_REPOSITORY }}
-          tags: latest ${{ github.sha }}
-          registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+        run: |
+          buildah push ${{ env.ECR_REPOSITORY }}:latest docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          buildah push ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
