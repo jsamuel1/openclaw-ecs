@@ -31,6 +31,9 @@ jobs:
           unzip -q /tmp/awscliv2.zip -d /tmp
           sudo /tmp/aws/install --update
 
+      - name: Install Buildah
+        run: sudo apt-get update && sudo apt-get install -y buildah
+
       - name: Create ECR repository if not exists
         run: |
           aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} 2>/dev/null || \
