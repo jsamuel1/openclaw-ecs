@@ -1,0 +1,23 @@
+version: 0.2
+
+env:
+  variables:
+    ECR_REGION: ap-southeast-4
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to ECR in $ECR_REGION...
+      - aws ecr get-login-password --region $ECR_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com
+      - aws ecr describe-repositories --repository-names $ECR_REPOSITORY --region $ECR_REGION 2>/dev/null || aws ecr create-repository --repository-name $ECR_REPOSITORY --region $ECR_REGION
+  build:
+    commands:
+      - echo Building Docker image...
+      - docker build -t $ECR_REPOSITORY:latest -t $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION docker/
+  post_build:
+    commands:
+      - echo Pushing to ECR in $ECR_REGION...
+      - docker tag $ECR_REPOSITORY:latest $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+      - docker tag $ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$ECR_REGION.amazonaws.com/$ECR_REPOSITORY:$CODEBUILD_RESOLVED_SOURCE_VERSION

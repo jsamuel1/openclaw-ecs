@@ -3,13 +3,14 @@ name: Build and Push Docker Image
 on:
   push:
     branches: [main]
-    paths: ['docker/**', '.github/workflows/build-image.yml']
+    paths: ['docker/**', 'buildspec.yml', '.github/workflows/build-image.yml']
   schedule:
     - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
   workflow_dispatch:
 
 env:
   AWS_REGION: ap-southeast-4
+  CODEBUILD_REGION: ap-southeast-2
   ECR_REPOSITORY: moltbot
 
 jobs:
@@ -23,31 +24,32 @@ jobs:
       - name: Setup AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ env.CODEBUILD_REGION }}
 
-      - name: Setup QEMU for ARM64
+      - name: Trigger CodeBuild
+        id: codebuild
         run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-user-static buildah
-          sudo mkdir -p /proc/sys/fs/binfmt_misc
-          sudo mount binfmt_misc -t binfmt_misc /proc/sys/fs/binfmt_misc || true
-          echo ':qemu-aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\xb7\x00:\xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff:/usr/bin/qemu-aarch64-static:F' | sudo tee /proc/sys/fs/binfmt_misc/register || true
+          BUILD_ID=$(aws codebuild start-build \
+            --project-name moltbot-arm64 \
+            --source-version ${{ github.sha }} \
+            --region ${{ env.CODEBUILD_REGION }} \
+            --query 'build.id' --output text)
+          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
+          echo "Started CodeBuild: $BUILD_ID"
 
-      - name: Create ECR repository if not exists
+      - name: Wait for CodeBuild
         run: |
-          aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} 2>/dev/null || \
-          aws ecr create-repository --repository-name ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }}
-
-      - name: Build image with Buildah (ARM64)
-        run: |
-          sudo buildah bud --arch arm64 -f docker/Dockerfile -t ${{ env.ECR_REPOSITORY }}:latest -t ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker/
-
-      - name: Login to ECR
-        run: |
-          aws ecr get-login-password --region ${{ env.AWS_REGION }} | \
-            sudo buildah login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-
-      - name: Push to ECR
-        run: |
-          sudo buildah push ${{ env.ECR_REPOSITORY }}:latest docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
-          sudo buildah push ${{ env.ECR_REPOSITORY }}:${{ github.sha }} docker://${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          echo "Waiting for build ${{ steps.codebuild.outputs.build_id }}..."
+          aws codebuild batch-get-builds --ids ${{ steps.codebuild.outputs.build_id }} --region ${{ env.CODEBUILD_REGION }} --query 'builds[0].buildStatus' --output text
+          while true; do
+            STATUS=$(aws codebuild batch-get-builds --ids ${{ steps.codebuild.outputs.build_id }} --region ${{ env.CODEBUILD_REGION }} --query 'builds[0].buildStatus' --output text)
+            echo "Status: $STATUS"
+            if [ "$STATUS" = "SUCCEEDED" ]; then
+              echo "Build succeeded!"
+              exit 0
+            elif [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "FAULT" ] || [ "$STATUS" = "STOPPED" ] || [ "$STATUS" = "TIMED_OUT" ]; then
+              echo "Build failed with status: $STATUS"
+              exit 1
+            fi
+            sleep 30
+          done
