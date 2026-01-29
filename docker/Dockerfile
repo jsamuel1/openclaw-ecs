@@ -12,7 +12,8 @@ RUN git clone https://github.com/jsamuel1/moltbot.git /tmp/moltbot && \
     npm install -g pnpm && \
     pnpm install && \
     pnpm build && \
-    npm install -g . && \
+    npm pack && \
+    npm install -g moltbot-*.tgz && \
     rm -rf /tmp/moltbot
 
 # Set working directory
