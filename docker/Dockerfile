@@ -6,11 +6,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone and install moltbot
-RUN git clone https://github.com/jsamuel1/moltbot.git /tmp/moltbot && \
-    cd /tmp/moltbot && \
-    npm install -g . && \
-    rm -rf /tmp/moltbot
+# Install moltbot from npm
+RUN npm install -g moltbot@latest
 
 # Set working directory
 WORKDIR /data
