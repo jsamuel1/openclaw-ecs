@@ -26,9 +26,10 @@ After deployment, exec into the container to run onboarding:
 ```bash
 # Get task ARN
 TASK=$(aws ecs list-tasks --cluster moltbot-cluster --query 'taskArns[0]' --output text --region ap-southeast-4)
+echo "Task: $TASK"
 
 # Exec into container
-aws ecs execute-command --cluster moltbot-cluster --task $TASK --container clawdbot --interactive --command "/bin/bash" --region ap-southeast-4
+[ -n "$TASK" ] && aws ecs execute-command --cluster moltbot-cluster --task $TASK --container clawdbot --interactive --command "/bin/bash" --region ap-southeast-4
 
 # Inside container: run onboarding
 moltbot onboard
