@@ -51,6 +51,7 @@ The ECS task runs in private subnets without public IPs. The following VPC endpo
 | Endpoint | Purpose |
 |----------|---------|
 | ssm, ssmmessages, ec2messages | ECS Exec (container shell access) |
+| ecs, ecs-agent, ecs-telemetry | ECS control plane communication |
 | ecr.api, ecr.dkr | Pull container images from ECR |
 | s3 (gateway) | ECR image layers, general S3 access |
 | logs | CloudWatch Logs |
