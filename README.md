@@ -37,11 +37,26 @@ moltbot onboard
 
 ## Architecture
 
-- **VPC**: moltbot-vpc (has site-to-site VPN to home network)
+- **VPC**: custom-vpc (has site-to-site VPN to home network)
 - **ECS Cluster**: moltbot-cluster
 - **EFS**: Persistent storage for `~/.moltbot` config and sessions
 - **IAM**: Task role with Bedrock invoke permissions (CRIS global endpoints)
 - **Network**: awsvpc mode, RFC1918 access to gateway port 18789
+
+## VPC Endpoints
+
+The ECS task runs in private subnets without public IPs. The following VPC endpoints are required:
+
+| Endpoint | Purpose |
+|----------|---------|
+| ssm, ssmmessages, ec2messages | ECS Exec (container shell access) |
+| ecr.api, ecr.dkr | Pull container images from ECR |
+| s3 (gateway) | ECR image layers, general S3 access |
+| logs | CloudWatch Logs |
+| sts | IAM credential retrieval |
+| bedrock-runtime | Bedrock model invocation |
+
+**Important:** Interface endpoints must be present in the same AZ as the ECS task subnet.
 
 ## Accessing Gateway
 
@@ -52,6 +67,17 @@ To find the task IP:
 ```bash
 aws ecs describe-tasks --cluster moltbot-cluster --tasks $TASK --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text --region ap-southeast-4
 ```
+
+## Docker Image Build
+
+The Docker image is built from source using CodeBuild (ARM64). The build process:
+
+1. Clones the moltbot repository
+2. Installs pnpm and dependencies (`pnpm install`)
+3. Builds the TypeScript (`pnpm build`)
+4. Installs globally (`npm install -g .`)
+
+This is required because the npm package needs the built `dist/` folder which isn't in the git repo.
 
 ## Model Configuration
 
