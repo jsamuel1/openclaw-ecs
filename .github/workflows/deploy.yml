@@ -40,3 +40,8 @@ jobs:
           npx cdk deploy --require-approval never \
             -c vpc_name=${{ env.VPC_NAME }} \
             -c cluster_name=${{ env.CLUSTER_NAME }}
+
+      - name: Force service update
+        run: |
+          SERVICE=$(aws ecs list-services --cluster ${{ env.CLUSTER_NAME }} --query 'serviceArns[0]' --output text --region ${{ env.AWS_REGION }})
+          [ -n "$SERVICE" ] && aws ecs update-service --cluster ${{ env.CLUSTER_NAME }} --service $SERVICE --force-new-deployment --region ${{ env.AWS_REGION }}
