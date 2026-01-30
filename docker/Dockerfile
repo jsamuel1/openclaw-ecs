@@ -16,8 +16,9 @@ RUN git clone https://github.com/jsamuel1/moltbot.git /tmp/moltbot && \
     npm install -g moltbot-*.tgz && \
     rm -rf /tmp/moltbot
 
-# Set working directory
+# Set working directory and HOME for config persistence on EFS
 WORKDIR /data
+ENV HOME=/data
 
 # Expose gateway port
 EXPOSE 18789
