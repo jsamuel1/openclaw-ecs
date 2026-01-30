@@ -22,5 +22,5 @@ WORKDIR /data
 # Expose gateway port
 EXPOSE 18789
 
-# Run gateway
-CMD ["clawdbot", "gateway", "run", "--bind", "0.0.0.0", "--port", "18789"]
+# Run gateway (--allow-unconfigured keeps container alive for initial setup)
+CMD ["clawdbot", "gateway", "run", "--bind", "0.0.0.0", "--port", "18789", "--allow-unconfigured"]
