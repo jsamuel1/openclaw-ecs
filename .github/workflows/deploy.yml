@@ -12,12 +12,12 @@ on:
 
 env:
   AWS_REGION: ap-southeast-4
-  VPC_NAME: ${{ vars.VPC_NAME || 'moltbot-vpc' }}
-  CLUSTER_NAME: ${{ vars.CLUSTER_NAME || 'moltbot-cluster' }}
+  VPC_NAME: ${{ vars.VPC_NAME || 'openclaw-vpc' }}
+  CLUSTER_NAME: ${{ vars.CLUSTER_NAME || 'openclaw-cluster' }}
 
 jobs:
   deploy:
-    runs-on: moltbot-aws
+    runs-on: openclaw-aws
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}

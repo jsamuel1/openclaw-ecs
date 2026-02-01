@@ -1,8 +1,8 @@
 {
-  "name": "clawdbot-ecs",
+  "name": "openclaw-ecs",
   "version": "0.1.0",
   "bin": {
-    "clawdbot-ecs": "bin/clawdbot-ecs.js"
+    "openclaw-ecs": "bin/openclaw-ecs.js"
   },
   "scripts": {
     "build": "tsc",

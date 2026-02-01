@@ -11,11 +11,11 @@ on:
 env:
   AWS_REGION: ap-southeast-4
   CODEBUILD_REGION: ap-southeast-2
-  ECR_REPOSITORY: moltbot
+  ECR_REPOSITORY: openclaw
 
 jobs:
   build:
-    runs-on: moltbot-aws
+    runs-on: openclaw-aws
     env:
       CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
     steps:
@@ -36,15 +36,15 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y zip
           zip -r /tmp/source.zip . -x '*.git*'
-          aws s3 cp /tmp/source.zip s3://moltbot-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip --region ${{ env.CODEBUILD_REGION }}
+          aws s3 cp /tmp/source.zip s3://openclaw-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip --region ${{ env.CODEBUILD_REGION }}
 
       - name: Trigger CodeBuild
         id: codebuild
         run: |
           BUILD_ID=$(aws codebuild start-build \
-            --project-name moltbot-arm64 \
+            --project-name openclaw-arm64 \
             --source-type-override S3 \
-            --source-location-override moltbot-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip \
+            --source-location-override openclaw-codebuild-source-${{ secrets.AWS_ACCOUNT_ID }}/source.zip \
             --environment-variables-override name=COMMIT_SHA,value=${{ github.sha }} \
             --region ${{ env.CODEBUILD_REGION }} \
             --query 'build.id' --output text)

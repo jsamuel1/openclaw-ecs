@@ -8,13 +8,13 @@ import {
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
-export interface ClawdbotEcsStackProps extends cdk.StackProps {
+export interface OpenclawEcsStackProps extends cdk.StackProps {
   vpcName: string;
   ecsClusterName: string;
 }
 
-export class ClawdbotEcsStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: ClawdbotEcsStackProps) {
+export class OpenclawEcsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props: OpenclawEcsStackProps) {
     super(scope, id, props);
 
     // Lookup existing VPC
@@ -38,10 +38,10 @@ export class ClawdbotEcsStack extends cdk.Stack {
       desiredCapacity: 1,
     });
 
-    // Security group for Clawdbot (allow RFC1918 access to gateway port)
-    const securityGroup = new ec2.SecurityGroup(this, 'ClawdbotSg', {
+    // Security group for OpenClaw (allow RFC1918 access to gateway port)
+    const securityGroup = new ec2.SecurityGroup(this, 'OpenclawSg', {
       vpc,
-      description: 'Clawdbot Gateway security group',
+      description: 'OpenClaw Gateway security group',
     });
     securityGroup.addIngressRule(
       ec2.Peer.ipv4('10.0.0.0/8'),
@@ -60,15 +60,15 @@ export class ClawdbotEcsStack extends cdk.Stack {
     );
 
     // EFS for persistent config and sessions
-    const fileSystem = new efs.FileSystem(this, 'ClawdbotEfs', {
+    const fileSystem = new efs.FileSystem(this, 'OpenclawEfs', {
       vpc,
       encrypted: true,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    const accessPoint = fileSystem.addAccessPoint('ClawdbotAp', {
-      path: '/clawdbot',
+    const accessPoint = fileSystem.addAccessPoint('OpenclawAp', {
+      path: '/openclaw',
       createAcl: { ownerGid: '1000', ownerUid: '1000', permissions: '755' },
       posixUser: { gid: '1000', uid: '1000' },
     });
@@ -121,7 +121,7 @@ export class ClawdbotEcsStack extends cdk.Stack {
 
     // Log group
     const logGroup = new logs.LogGroup(this, 'LogGroup', {
-      logGroupName: '/ecs/clawdbot',
+      logGroupName: '/ecs/openclaw',
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
@@ -132,7 +132,7 @@ export class ClawdbotEcsStack extends cdk.Stack {
       taskRole,
       executionRole,
       volumes: [{
-        name: 'clawdbot-data',
+        name: 'openclaw-data',
         efsVolumeConfiguration: {
           fileSystemId: fileSystem.fileSystemId,
           transitEncryption: 'ENABLED',
@@ -144,22 +144,22 @@ export class ClawdbotEcsStack extends cdk.Stack {
       }],
     });
 
-    const container = taskDefinition.addContainer('clawdbot', {
+    const container = taskDefinition.addContainer('openclaw', {
       image: ecs.ContainerImage.fromRegistry(
-        `${this.account}.dkr.ecr.${this.region}.amazonaws.com/moltbot:latest`
+        `${this.account}.dkr.ecr.${this.region}.amazonaws.com/openclaw:latest`
       ),
       memoryReservationMiB: 1024,
       cpu: 512,
       essential: true,
       logging: ecs.LogDrivers.awsLogs({
-        streamPrefix: 'clawdbot',
+        streamPrefix: 'openclaw',
         logGroup,
       }),
       portMappings: [{ containerPort: 18789, protocol: ecs.Protocol.TCP }],
     });
 
     container.addMountPoints({
-      sourceVolume: 'clawdbot-data',
+      sourceVolume: 'openclaw-data',
       containerPath: '/data',
       readOnly: false,
     });

@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   GitHubRepo:
     Type: String
-    Default: https://github.com/jsamuel1/moltbot-aws.git
+    Default: https://github.com/jsamuel1/openclaw-ecs.git
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -45,11 +45,11 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:GetObjectVersion
-                Resource: !Sub 'arn:aws:s3:::moltbot-codebuild-source-${AWS::AccountId}/*'
+                Resource: !Sub 'arn:aws:s3:::openclaw-codebuild-source-${AWS::AccountId}/*'
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: moltbot-arm64
+      Name: openclaw-arm64
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Environment:
         Type: ARM_CONTAINER
@@ -62,7 +62,7 @@ Resources:
           - Name: AWS_DEFAULT_REGION
             Value: !Ref AWS::Region
           - Name: ECR_REPOSITORY
-            Value: moltbot
+            Value: openclaw
       Source:
         Type: GITHUB
         Location: !Ref GitHubRepo

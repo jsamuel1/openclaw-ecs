@@ -1,6 +1,6 @@
-# Moltbot on ECS
+# OpenClaw on ECS
 
-Deploys Moltbot to ECS with Bedrock authentication.
+Deploys OpenClaw to ECS with Bedrock authentication.
 
 ## Prerequisites
 
@@ -25,22 +25,22 @@ After deployment, exec into the container to run onboarding:
 
 ```bash
 # Get task ARN
-TASK=$(aws ecs list-tasks --cluster moltbot-cluster --query 'taskArns[0]' --output text --region ap-southeast-4)
+TASK=$(aws ecs list-tasks --cluster openclaw-cluster --query 'taskArns[0]' --output text --region ap-southeast-4)
 echo "Task: $TASK"
 
 # Exec into container
-[ -n "$TASK" ] && aws ecs execute-command --cluster moltbot-cluster --task $TASK --container clawdbot --interactive --command "/bin/bash" --region ap-southeast-4
+[ -n "$TASK" ] && aws ecs execute-command --cluster openclaw-cluster --task $TASK --container openclaw --interactive --command "/bin/bash" --region ap-southeast-4
 
 # Inside container: run onboarding
-moltbot onboard
+openclaw onboard
 # Select: Amazon Bedrock → SDK credentials (auto-detected from task role)
 ```
 
 ## Architecture
 
 - **VPC**: custom-vpc (has site-to-site VPN to home network)
-- **ECS Cluster**: moltbot-cluster
-- **EFS**: Persistent storage for `~/.moltbot` config and sessions
+- **ECS Cluster**: openclaw-cluster
+- **EFS**: Persistent storage for `~/.openclaw` config and sessions
 - **IAM**: Task role with Bedrock invoke permissions (CRIS global endpoints)
 - **Network**: awsvpc mode, RFC1918 access to gateway port 18789
 
@@ -67,14 +67,14 @@ From your home network (via VPN), connect to the ECS task's private IP on port 1
 To find the task IP:
 
 ```bash
-aws ecs describe-tasks --cluster moltbot-cluster --tasks $TASK --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text --region ap-southeast-4
+aws ecs describe-tasks --cluster openclaw-cluster --tasks $TASK --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' --output text --region ap-southeast-4
 ```
 
 ## Docker Image Build
 
 The Docker image is built from source using CodeBuild (ARM64). The build process:
 
-1. Clones the moltbot repository
+1. Clones the openclaw repository
 2. Installs pnpm and dependencies (`pnpm install`)
 3. Builds the TypeScript (`pnpm build`)
 4. Installs globally (`npm install -g .`)
