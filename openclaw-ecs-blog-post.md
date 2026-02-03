@@ -10,9 +10,23 @@ Sometimes the best projects start with a simple question: "Should I run this on 
 
 The Gateway is the control plane - it manages sessions, channels, tools, and events. OpenClaw's docs explicitly support running this Gateway on a remote Linux instance (they call it "Remote Gateway" mode). My ECS setup takes this pattern further with AWS-native security.
 
+## A Word of Caution
+
+OpenClaw is powerful - and that's exactly why you should be careful. Once connected to messaging channels like WhatsApp, Telegram, or Slack, it can:
+
+- **Execute arbitrary code** on the host system via bash tools
+- **Read and write files** anywhere the process has access
+- **Send messages** on your behalf to anyone in your contacts
+- **Browse the web** and interact with websites
+- **Run scheduled tasks** via cron without supervision
+
+This isn't a criticism of OpenClaw - these capabilities are features, not bugs. But an AI agent with filesystem access, network access, and the ability to impersonate you on messaging platforms deserves serious thought about where you run it.
+
+Running it on your personal laptop means it has access to your SSH keys, browser cookies, password managers, and everything else. A prompt injection attack via an incoming message could potentially exfiltrate sensitive data.
+
 ## Why Run OpenClaw in ECS?
 
-Running OpenClaw locally means dealing with API keys, storage limitations, and having an AI agent with filesystem access on your main machine. Running the Gateway in ECS solves all of these problems elegantly:
+Running OpenClaw locally means dealing with API keys, storage limitations, and having an AI agent with filesystem access on your main machine. Running the Gateway in ECS provides **containment** - if something goes wrong, the blast radius is limited to an isolated container with no access to your personal data:
 
 ### 1. Security Through IAM
 
