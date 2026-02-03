@@ -2,6 +2,8 @@
 
 *Published: [Date]*
 
+**Disclaimer:** This is a personal project done in my own time. It is not affiliated with my employer in any way. Do not deploy this on corporate networks or use it for work purposes. This is experimental software that connects an AI agent to messaging platforms with significant autonomous capabilities - only use it if you fully understand the security implications.
+
 Sometimes the best projects start with a simple question: "Should I run this on my computer?", which may lead to "What if I could run it in a nice, sandboxed cloud environment?". When -Clawdbot- OpenClaw launched, this question led me down a rabbit hole that resulted in [openclaw-ecs](https://github.com/jsamuel1/openclaw-ecs) - a CDK project that deploys OpenClaw to AWS ECS, so that I can be confident it won't be exfiltrating my trusted work or personal data.
 
 ## What is OpenClaw?
