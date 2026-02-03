@@ -7,7 +7,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Clone, build, and install openclaw
-RUN git clone https://github.com/jsamuel1/openclaw.git /tmp/openclaw && \
+RUN git clone https://github.com/openclaw/openclaw.git /tmp/openclaw && \
     cd /tmp/openclaw && \
     npm install -g pnpm && \
     pnpm install && \

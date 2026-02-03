@@ -11,11 +11,14 @@ import { Construct } from 'constructs';
 export interface OpenclawEcsStackProps extends cdk.StackProps {
   vpcName: string;
   ecsClusterName: string;
+  desiredCount?: number;
 }
 
 export class OpenclawEcsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: OpenclawEcsStackProps) {
     super(scope, id, props);
+
+    const desiredCount = props.desiredCount ?? 0;
 
     // Lookup existing VPC
     const vpc = ec2.Vpc.fromLookup(this, 'Vpc', {
@@ -33,9 +36,9 @@ export class OpenclawEcsStack extends cdk.Stack {
     cluster.addCapacity('ManagedCapacity', {
       instanceType: new ec2.InstanceType('t4g.small'),
       machineImage: ecs.EcsOptimizedImage.amazonLinux2023(ecs.AmiHardwareType.ARM),
-      minCapacity: 1,
+      minCapacity: desiredCount > 0 ? 1 : 0,
       maxCapacity: 2,
-      desiredCapacity: 1,
+      desiredCapacity: desiredCount > 0 ? 1 : 0,
     });
 
     // Security group for OpenClaw (allow RFC1918 access to gateway port)
@@ -86,7 +89,7 @@ export class OpenclawEcsStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
     });
 
-    // Bedrock invoke permissions (all models, including CRIS global endpoints)
+    // Bedrock invoke permissions
     taskRole.addToPolicy(new iam.PolicyStatement({
       actions: [
         'bedrock:InvokeModel',
@@ -95,7 +98,7 @@ export class OpenclawEcsStack extends cdk.Stack {
       resources: ['arn:aws:bedrock:*::foundation-model/*'],
     }));
 
-    // Bedrock discovery permissions (for auto model discovery)
+    // Bedrock discovery permissions
     taskRole.addToPolicy(new iam.PolicyStatement({
       actions: [
         'bedrock:ListFoundationModels',
@@ -145,12 +148,17 @@ export class OpenclawEcsStack extends cdk.Stack {
     });
 
     const container = taskDefinition.addContainer('openclaw', {
-      image: ecs.ContainerImage.fromRegistry(
-        `${this.account}.dkr.ecr.${this.region}.amazonaws.com/openclaw:latest`
-      ),
+      image: ecs.ContainerImage.fromRegistry('1panel/openclaw:latest'),
       memoryReservationMiB: 1024,
       cpu: 512,
       essential: true,
+      command: ['node', 'dist/index.js', 'gateway', '--allow-unconfigured', '--bind', 'lan', '--port', '18789'],
+      environment: {
+        HOME: '/data',
+        OPENCLAW_CONFIG_PATH: '/data/.openclaw/openclaw.json',
+        OPENCLAW_STATE_DIR: '/data/.openclaw',
+        OPENCLAW_GATEWAY_TOKEN: 'openclaw-ecs-token',  // Simple token for internal use
+      },
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: 'openclaw',
         logGroup,
@@ -164,11 +172,11 @@ export class OpenclawEcsStack extends cdk.Stack {
       readOnly: false,
     });
 
-    // ECS Service with rolling deployment
+    // ECS Service - starts at 0 until onboarding complete
     const service = new ecs.Ec2Service(this, 'Service', {
       cluster,
       taskDefinition,
-      desiredCount: 1,
+      desiredCount,
       enableExecuteCommand: true,
       securityGroups: [securityGroup],
       minHealthyPercent: 0,
@@ -180,6 +188,9 @@ export class OpenclawEcsStack extends cdk.Stack {
 
     // Outputs
     new cdk.CfnOutput(this, 'EfsFileSystemId', { value: fileSystem.fileSystemId });
+    new cdk.CfnOutput(this, 'EfsAccessPointId', { value: accessPoint.accessPointId });
     new cdk.CfnOutput(this, 'ServiceName', { value: service.serviceName });
+    new cdk.CfnOutput(this, 'ClusterName', { value: cluster.clusterName });
+    new cdk.CfnOutput(this, 'SecurityGroupId', { value: securityGroup.securityGroupId });
   }
 }

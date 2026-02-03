@@ -8,8 +8,8 @@ const app = new cdk.App();
 // Configuration from context or defaults
 const vpcName = app.node.tryGetContext('vpc_name') || 'openclaw-vpc';
 const clusterName = app.node.tryGetContext('cluster_name') || 'openclaw-cluster';
+const desiredCount = parseInt(app.node.tryGetContext('desired_count') || '0', 10);
 
-// Deploy to same account/region as pi-hole (ap-southeast-4 Melbourne)
 new OpenclawEcsStack(app, 'OpenclawEcsStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -17,4 +17,5 @@ new OpenclawEcsStack(app, 'OpenclawEcsStack', {
   },
   vpcName,
   ecsClusterName: clusterName,
+  desiredCount,
 });
