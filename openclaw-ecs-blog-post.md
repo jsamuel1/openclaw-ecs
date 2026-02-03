@@ -89,19 +89,23 @@ sudo -i
 export HOME=/data
 export PATH=/usr/local/bin:$PATH  # Node 22 is installed here
 npm install -g openclaw
-openclaw onboard
-# Walks through gateway, workspace, channels, and skills setup
 
-# If you need to change settings later:
-openclaw configure
-# Select: Amazon Bedrock → SDK credentials
-# Choose your model (e.g., anthropic/claude-sonnet-4-5)
+# Create the Bedrock config (the onboard wizard doesn't support Bedrock directly)
+mkdir -p /data/.openclaw
+cat > /data/.openclaw/openclaw.json << 'EOF'
+{"agents":{"defaults":{"model":{"primary":"bedrock/anthropic.claude-opus-4-5-20251101-v1:0"}}}}
+EOF
+
+# Verify config
+cat /data/.openclaw/openclaw.json
 exit
 ```
 
 **Note:** OpenClaw requires Node.js 22+. The setup script installs Node 22 from the official binary distribution since Amazon Linux 2023's default nodejs package is v20.
 
-After onboarding, terminate the instance and start the service:
+**Note:** We create the config file manually because OpenClaw's `onboard` wizard doesn't have a Bedrock option - it expects Anthropic API keys or OAuth. The ECS task role provides Bedrock credentials automatically via the AWS SDK.
+
+After setup, terminate the instance and start the service:
 
 ```bash
 # Terminate setup instance (script shows the instance ID)
