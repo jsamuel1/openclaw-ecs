@@ -118,7 +118,6 @@ cat << EOF
    sudo -i
    export HOME=/data
    export PATH=/usr/local/bin:\$PATH
-   export OPENCLAW_IMAGE=alpine/openclaw
    npm install -g openclaw
    openclaw onboard
    
