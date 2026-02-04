@@ -148,7 +148,7 @@ export class OpenclawEcsStack extends cdk.Stack {
     });
 
     const container = taskDefinition.addContainer('openclaw', {
-      image: ecs.ContainerImage.fromRegistry('1panel/openclaw:latest'),
+      image: ecs.ContainerImage.fromRegistry('alpine/openclaw:latest'),
       memoryReservationMiB: 1024,
       cpu: 512,
       essential: true,

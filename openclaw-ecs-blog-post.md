@@ -59,7 +59,7 @@ The infrastructure is built with AWS CDK in TypeScript (because life's too short
 - **ECS on EC2**: Running on t4g.small ARM instances because they're cost-effective and OpenClaw doesn't need much compute
 - **EFS**: Mounted at `/data` which is set as `HOME`, so `~/.openclaw` persists
 - **Bedrock**: Connected via global endpoints for model access
-- **Docker Image**: Using the community-maintained `1panel/openclaw` image from Docker Hub (ARM64 compatible)
+- **Docker Image**: Using the community-maintained `alpine/openclaw` image from Docker Hub (ARM64 compatible)
 - **VPC Endpoints**: A whole collection of them since the task runs in private subnets
 
 The container runs with `--bind lan` to listen on all interfaces, and `--allow-unconfigured` to start even without a full config (the config is loaded from EFS). Environment variables point OpenClaw to the EFS-mounted config directory.
@@ -68,7 +68,7 @@ The VPC endpoint setup was particularly fun - you need endpoints for ECS control
 
 ## The Docker Image
 
-Rather than building from source, I'm using the community-maintained [`1panel/openclaw`](https://hub.docker.com/r/1panel/openclaw) image from Docker Hub. It's kept up-to-date with OpenClaw releases and supports both AMD64 and ARM64 architectures - perfect for our cost-effective t4g instances.
+Rather than building from source, I'm using the community-maintained [`alpine/openclaw`](https://hub.docker.com/r/alpine/openclaw) image from Docker Hub. It's kept up-to-date with OpenClaw releases and supports both AMD64 and ARM64 architectures - perfect for our cost-effective t4g instances.
 
 ## Getting Started
 
